@@ -1,0 +1,76 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>login</title>
+    <link rel="stylesheet" href="{% static 'plugins//bootstrap-5.3.0-alpha1/css/bootstrap.css' %}">
+
+    <style>
+
+        .loginarea {
+            float: right;
+            width: 400px;
+            border: 1px solid #dddddd;
+            border-radius: 5px;
+            box-shadow: 5px 5px 20px #aaa;
+            padding: 20px 40px;
+        }
+
+        .loginarea h1{
+            margin-top: 10px;
+            text-align: center;
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <!--logo区域-->
+    <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+            <svg class="bi me-2" width="40" height="32">
+                <use xlink:href="#bootstrap"></use>
+            </svg>
+            <span class="fs-4"> Arcelor mittal</span>
+        </a>
+
+        <ul class="nav nav-pills">
+            <li class="nav-item"><a href="/index/logout" class="nav-link">{{ currentUser }}</a></li>
+        </ul>
+    </header>
+    <!--logo区域-->
+
+    <!--登录界面-->
+    <div class="loginarea">
+        <h1>Welcome</h1>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="mb-3">
+                <label>username</label>
+                {{ form.username }}
+                <span style="color: red;"> {{form.username.errors.0}} </span>
+            </div>
+            <div class="mb-3">
+                <label>Password</label>
+                {{ form.password }}
+                <span style="color: red;"> {{form.password.errors.0}} </span>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+            <span style="color: red;"> {{error_info}} </span>
+        </form>
+    </div>
+    <!--登录界面-->
+
+<script src="{% static 'plugins/bootstrap-5.3.0-alpha1/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>
+
+
+<!--    <div class="clear: both;"></div>-->
+
+
+

@@ -1,0 +1,185 @@
+{% extends "expense_temp.html" %}
+
+{% block content %}
+
+<div>
+    <!--新增用户_button-->
+    <div class="=container">
+        <!--        <a class="btn btn-success" style="margin-top:10px" href="/index/expense/hradd">-->
+        <!--            <i class="bi bi-person-fill-add" style="margin-right:10px"></i>-->
+        <!--            Add new-->
+        <!--        </a>-->
+        <a class="btn btn-success" data-bs-toggle="modal" data-bs-target="#NewUserAdd" style="margin-top:10px">
+            <i class="bi bi-person-fill-add" style="margin-right:10px"></i>
+            Add new
+        </a>
+    </div>
+    <!--新增用户_button-->
+
+    <!--新增用户User，弹出modal对话框_开始-->
+
+    <!--新增用户，弹出modal对话框_结束-->
+
+    <!--冻结或激活用户User，弹出modal对话框_开始-->
+    <div class="modal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Modal title</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Modal body text goes here.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button id="btnSwitchConfirm" type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--冻结或激活用户User，弹出modal对话框_开始-->
+
+    <!--员工信息展示-->
+    <div class="panel panel-default">
+        <div class="panel-headling bg-body-tertiary" style="margin-top:10px">
+            <i class="bi bi-list-ul"></i>
+            Employee list
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped table-bordered">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                     <th scope="col">username</th>
+                    <th scope="col">last_name</th>
+                    <th scope="col">first_name</th>
+                    <th scope="col">email</th>
+                    <th scope="col">status</th>
+                    <th scope="col">company</th>
+                    <th scope="col">business_unit</th>
+                    <th scope="col">line_manager</th>
+                    <th scope="col">operate</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for obj in queryset %}
+                <tr>
+                    <th>{{ obj.id }}</th>
+                    <td>{{ obj.username }}</td>
+                    <td>{{ obj.last_name }}</td>
+                    <td>{{ obj.first_name }}</td>
+                    <td>{{ obj.email }}</td>
+                    <td>{{ obj.get_status_display }}</td>
+                    <td>{{ obj.company_name }}</td>
+                    <td>{{ obj.business_unit }}</td>
+                    <td>{{ obj.line_manager }}</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href='/index/expense/{{obj.id}}/hredit/'>
+                            <i class="bi bi-pencil-fill"></i>
+                            Edit
+                        </a>
+
+                        {% if obj.status == 1 %}
+<!--                            <a class="btn btn-success btn-sm" href='#'>-->
+<!--                                <i class="bi bi-person-fill-lock"></i>-->
+<!--                                    active-->
+<!--                            </a>-->
+                            <button uid="{{ obj.id }}" class="btn btn-success btn-sm btn-deactive">
+                                <i class="bi bi-person-fill-lock"></i>
+                                active
+                            </button>
+                        {% else %}
+<!--                            <a class="btn btn-danger btn-sm" href='#'>-->
+<!--                                <i class="bi bi-person-fill-gear"></i>-->
+<!--                                    deactive-->
+<!--                            </a>-->
+                            <button uid="{{ obj.id }}" class="btn btn-danger btn-sm btn-active">
+                                <i class="bi bi-person-fill-gear">
+                                    deactive
+                                </i>
+                            </button>
+                        {% endif %}
+
+                    </td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!--员工信息展示-->
+
+</div>
+
+{% endblock %}
+
+<!--hr_admin后台自定义的JavaScript-->
+{% block js %}
+<script type="text/javascript">
+
+    {#设置弹出提示框属性#}
+    toastr.options = {
+        closeButton: true,
+        debug: true,
+        progressBar: true,
+        positionClass: "toast-top-center",
+        onclick: null,
+        showDuration: "300",
+        hideDuration: "1000",
+        timeOut: "3000",
+        extendedTimeOut: "1000",
+        showEasing: "swing",
+        hideEasing: "linear",
+        showMethod: "fadeIn",
+        hideMethod: "fadeOut"
+    };
+
+    {#冻结用户，激活用户JavaScript#}
+    var SwitchID;
+
+    $(function () {
+        bindBtnSwitchEvent();
+        bindSwitchConfirmEvent();
+    })
+
+    function bindBtnSwitchEvent() {
+        $(".btn-deactive").click(function(){
+            $('.modal').modal('show');
+            SwitchID = $(this).attr("uid");
+            console.log(SwitchID)
+        });
+        $(".btn-active").click(function(){
+            $('.modal').modal('show');
+            SwitchID = $(this).attr("uid");
+            console.log(SwitchID)
+        });
+    }
+
+    function bindSwitchConfirmEvent() {
+        $("#btnSwitchConfirm").click(function(){
+            alert('ddd');
+            $.ajax({
+                url: "/index/expense/test/switch",
+                type: 'GET',
+                data: {
+                    uid: SwitchID
+                },
+                dataType:'JSON',
+                success: function (res){
+
+                }
+
+            })
+        });
+    }
+
+
+
+</script>
+
+{% endblock %}
+
+

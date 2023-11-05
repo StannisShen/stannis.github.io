@@ -1,0 +1,244 @@
+{% extends "expense_temp.html" %}
+
+{% block content %}
+{% block css %}
+    <style>
+        .BtnEdit {
+            margin-right:5px;
+        }
+
+    </style>
+{% endblock %}
+<div>
+    <!--功能区_button-->
+    <div class="=container">
+        <a id="ExpenseTypMaintain" class="btn btn-outline-primary" style="margin-top:10px">
+            <i class="bi bi-kanban"></i>
+            Expense typ maintain
+        </a>
+    </div>
+    <!--功能区_button-->
+
+    <!--费用类型界面-->
+    <div id="ExpenseTypDiv" class="panel panel-default">
+        <div class="panel-headling bg-body-tertiary" style="margin-top:10px">
+            <i class="bi bi-list-ul"></i>
+            Expense typ list
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped table-bordered">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Expense_Typ_level 1</th>
+                    <th scope="col">Expense_Typ_level 2</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Operate</th>
+                </tr>
+                </thead>
+
+                <tbody id="AjaxRequest">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!--费用类型界面-->
+
+    <!--AddEdit ExpenseTyp，modal_start-->
+    <div class="modal fade" id="ExpTypeModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLiveLabel" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLiveLabel Add">Add ExpenseTyp</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <form id="ExpenseTypForm" method="post" class="row row-cols-2" novalidate>
+                            {% csrf_token %}
+
+                            {% for field in ExpTypeForm %}
+                            <div class="form-group col">
+                                <label> {{ field.label }} </label>
+                                {{ field }}
+                                <span class="error-msg" style="color: red"></span>
+                            </div>
+
+                            {% endfor %}
+                        </form>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button id="BtnExpenseTypSave" type="button" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--AddEdit ExpenseTyp，modal_end-->
+
+</div>
+{% endblock %}
+{% block js %}
+<script type="text/javascript">
+    {#设置弹出提示框属性#}
+    toastr.options = {
+        closeButton: true,
+        debug: true,
+        progressBar: true,
+        positionClass: "toast-top-center",
+        onclick: null,
+        showDuration: "300",
+        hideDuration: "1000",
+        timeOut: "2000",
+        extendedTimeOut: "1000",
+        showEasing: "swing",
+        hideEasing: "linear",
+        showMethod: "fadeIn",
+        hideMethod: "fadeOut"
+    };
+    {#设置弹出提示框属性#}
+
+
+    {#global var#}
+
+    var TaskFunc
+    var ExpTypeID
+    var result
+    var status
+    var ExpType
+
+    {#global var#}
+
+
+    {#事件绑定#}
+    $(function () {
+        doJsonSeriExpTypeLoad();
+
+    })
+    {#事件绑定#}
+
+    {#ExpMain function#}
+        {#ExpMainAddEdit ModalShow#}
+            {#ExpMainAdd ModalShow#}
+                $('#AjaxRequest').on('click', '.BtnAddExpenseType', function () {
+                    $('#ExpenseTypForm')[0].reset();
+                    $('.error-msg').empty();
+                    $('#ExpTypeModal').modal('show');
+                    TaskFunc='ExpMainTask';
+                    ExpTypeID= '';
+                })
+            {#ExpMainAdd ModalShow#}
+
+            {#ExpMainEdit ModalShow#}
+                $('#AjaxRequest').on('click', '.BtnEdit', function () {
+                    $('#ExpenseTypForm')[0].reset();
+                    $('.error-msg').empty();
+                    TaskFunc='ExpMainTask';
+                    ExpTypeID=$(this).attr("uid");
+                    $.ajax({
+                        url: '/index/expense/finance',
+                        type: 'get',
+                        data: {
+                            TaskFunc: 'ExpMainTask',
+                            ExpTypeID: ExpTypeID,
+                            },
+                        dataType:'JSON',
+                        success: function (res){
+                            console.log(res);
+                            if (res.status) {
+                                var i=0
+                                $.each(res.data, function (name, value) {
+                                    $("form[id='ExpenseTypForm'] label").eq(i).next().val(value);
+                                    i=i+1
+                                })
+                                $('#ExpTypeModal').modal('show');
+                            } else {
+                                toastr.warning(res.error);
+                            }
+                        },
+                        error : function() {
+                            toastr.warning("something goes wrong");
+                        }
+                    });
+                })
+            {#ExpMainEdit ModalShow#}
+        {#ExpMainAddEdit ModalShow#}
+
+        {#ExpMainAddEdit Save#}
+            $('#BtnExpenseTypSave').click(function () {
+                $('.error-msg').empty();
+                $.ajax({
+                    url: '/index/expense/finance',
+                    type: 'POST',
+                    data: $('#ExpenseTypForm').serialize()+"&TaskFunc="+TaskFunc+"&ExpTypeID="+ExpTypeID,
+                    dataType:'JSON',
+                    async: false,
+                    success: function (res){
+                        if (res.status) {
+                            if (res.exist) {
+                                toastr.warning("Expense type must be unique");
+                            } else {
+                                $('#ExpenseTypForm')[0].reset();
+                                $('#ExpTypeModal').modal('hide');
+                                $('#AjaxRequest').html('');
+<!--                                $('#AjaxRequest').empty();-->
+                                status =res.status;
+                                ExpType = res.JsonSeriExpType
+                                doJsonSeriExpTypeLoad();
+                                toastr.success('success');
+
+                                }
+                        } else {
+                            $.each(res.errors, function (name, errorlist) {
+                                $("#id_"+name).next().text(errorlist[0]);
+                            })
+                        }
+                    },
+                    error : function() {
+                        toastr.warning("something goes wrong");
+                    }
+                });
+            })
+        {#ExpMainAddEdit Save#}
+
+
+        function doJsonSeriExpTypeLoad(){
+            if (status) {
+                result=ExpType
+            } else {
+                result={{ JsonSeriExpType|safe }};
+            }
+            console.log(result);
+            var tr='';
+            for (var i=0; i< result.length; i++){
+                var td='';
+                td='<tr><th>'+ result[i].pk+'</th>';
+                td +='<td>'+ result[i].fields.expense_type_level1+'</td>';
+                td +='<td>'+ result[i].fields.expense_type_level2+'</td>';
+                if (result[i].fields.status=1) {
+                    td +='<td>'+ '启用' +'</td>';
+                    td +="<td><button uid="+result[i].pk+ " class='btn btn-primary btn-sm BtnEdit'><i class='bi bi-pencil-fill'></i>Edit</button>";
+                    td +="<button uid="+result[i].pk+ " class='btn btn-success btn-sm BtnDeactive'><i class='bi bi-person-fill-lock'></i>Switch</button></td>";
+                } else {
+                    td +='<td>'+ '冻结' +'</td>';
+                    td +="<td><button uid="+result[i].pk+ " class='btn btn-primary btn-sm BtnEdit'><i class='bi bi-pencil-fill'></i>Edit</button>";
+                    td +="<button uid="+result[i].pk+ " class='btn btn-danger btn-sm BtnActive'><i class='bi bi-person-fill-gear'></i>Switch</button></td></tr>";
+                }
+                tr +=td;
+            }
+            tr +="<tr><th></th><td></td><td></td><td></td><td><button class='btn btn-secondary btn-sm BtnAddExpenseType'><i class='bi bi-pencil-fill'></i>"+ "Add" +"</button></td></tr>"
+            $('#AjaxRequest').append(tr);
+
+        }
+
+        {#ExpMainDoReload function#}
+        {#ExpMainDoReload function#}
+    {#ExpMain function#}
+
+
+</script>
+{% endblock %}

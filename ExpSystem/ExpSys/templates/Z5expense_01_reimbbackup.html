@@ -1,0 +1,844 @@
+{% extends "expense_temp.html" %}
+{% block css %}
+<style>
+<!--    select{-->
+<!--        font-size: 10px;-->
+<!--    }-->
+    input[type='text']{
+        font-size: 10px;
+    }
+    input[type='number']{
+        font-size: 10px;
+    }
+    .RepFormLine {
+        padding:0 0;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<div>
+    <!--功能区_button-->
+    <div class="=container">
+        <a id="BtnNewExpReport" class="btn btn-outline-primary" style="margin-top:10px">
+            <i class="bi bi-ui-checks-grid"></i>
+            NEW EXPENSE REPORT
+        </a>
+        <a id="BtnNewExpReportSave" class="btn btn-outline-primary" style="margin-top:10px; display: None">
+            <i class="bi bi-ui-checks-grid"></i>
+            SAVE
+        </a>
+        <a id="BtnNewExpReportExit" class="btn btn-outline-primary" style="margin-top:10px; display: None">
+            <i class="bi bi-ui-checks-grid"></i>
+            EXIT NewExpReport
+        </a>
+        <a id="BtnTaskListExit" class="btn btn-outline-primary" style="margin-top:10px; display: None">
+            <i class="bi bi-ui-checks-grid"></i>
+            EXIT TaskList
+        </a>
+        <a id="BtnExpReportApproveTask" class="btn btn-outline-primary float-end" style="margin-top:10px">
+            <i class="bi bi-ui-checks-grid"></i>
+            Approve Task
+        </a>
+    </div>
+    <!--功能区_button-->
+
+    <!--REPORTLIST界面-->
+    <div id="ReportList" class="panel panel-default">
+        <div class="panel-headling bg-body-tertiary" style="margin-top:10px">
+            <i class="bi bi-list-ul"></i>
+            EXPENSE REPORT LIST
+        </div>
+        <div class="panel-body">
+            <div class="container text-center">
+                <div class="row row-cols-5 border border-dark rounded"
+                     style="margin-bottom:5px;--bs-border-opacity: .5;">
+                    <div class="col-1">#</div>
+                    <div class="col-4">Report Number</div>
+                    <div class="col-1">Create on</div>
+                    <div class="col-2">Report Status</div>
+                    <div class="col-4">Operate</div>
+                </div>
+
+                {% for item in ReportData %}
+                <div id="{{ item.0 }}">
+                    <div class="row row-cols-5 ReportLine border border-dark rounded"
+                         style="margin-bottom:5px;padding:10px 0;--bs-border-opacity: .5;">
+                        <div class="col-1 ReportLineIndex">{{ item.0 }}</div>
+                        <div class="col-4 ReportLineNumber">{{ item.1 }}</div>
+                        <div class="col-1 ReportLineCreateTime">{{ item.2 }}</div>
+                        <div class="col-2 ReportLineStatus">{{ item.3 }}</div>
+                        <div class="col-4">
+                            <button class="btn btn-success btn-sm BtnSend" style="display:none" disabled>
+                                <i class="bi bi-person-fill-lock"></i>
+                                Send
+                            </button>
+                            <button class="btn btn-primary btn-sm BtnEdit" style="display:none" disabled>
+                                <i class="bi bi-pencil-fill"></i>
+                                Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm BtnDelete" style="display:none" disabled>
+                                <i class="bi bi-person-fill-gear"></i>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    <table class="table table-striped table-bordered" style="display:none">
+                        <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">ExpTypI</th>
+                            <th scope="col">ExpTypII</th>
+                            <th scope="col">ExpDate</th>
+                            <th scope="col">FromL</th>
+                            <th scope="col">ToL</th>
+                            <th scope="col">Currency</th>
+                            <th scope="col">ExRate</th>
+                            <th scope="col">AMTO</th>
+                            <th scope="col">AMTL</th>
+                            <th scope="col">Des</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for data in item.4 %}
+                        <tr>
+                            <th>{{ forloop.counter }}</th>
+                            <td>{{ data.0 }}</td>
+                            <td>{{ data.1 }}</td>
+                            <td>{{ data.2.0.exp_date|date:"Y-m-d" }}</td>
+                            <td>{{ data.2.0.from_location }}</td>
+                            <td>{{ data.2.0.to_location }}</td>
+                            <td>{{ data.2.0.Currency }}</td>
+                            <td>{{ data.2.0.exchange_rate }}</td>
+                            <td>{{ data.2.0.orig_amount }}</td>
+                            <td>{{ data.2.0.local_amount }}</td>
+                            <td>{{ data.2.0.description }}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <!--REPORTLIST界面-->
+
+    <!--NEWREPORT界面-->
+    <div id="NewExpRepEdit" class="panel panel-default" style="display:none">
+        <div class="panel-headling bg-body-tertiary clearfix" style="margin-top:10px;margin-bottom:20px;">
+            <span style="height:500px">
+                <i class="bi bi-list-ul"></i>
+                NEW EXPENSE REPORT EDITING
+            </span>
+            <span class="float-end">
+                <button id="AddOneRow" type="button" class="btn btn-primary">Add one row</button>
+                <button ID="AddRows" type="button" class="btn btn-primary">Add rows</button>
+            </span>
+        </div>
+
+        <div id="NewReport" class="panel-body">
+            <div class="containerThead row">
+                <label class="col TheadIndex "> # </label>
+                <label class="col TheadExpTypI "> ExpTypI </label>
+                <label class="col TheadExpTypII "> ExpTypII </label>
+                <label class="col TheadExpTyp "> {{ ExpReportForm.expenseTyp.label }} </label>
+                <label class="col TheadExpDate "> {{ ExpReportForm.exp_date.label }} </label>
+                <label class="col TheadFromL "> {{ ExpReportForm.from_location.label }} </label>
+                <label class="col TheadToL "> {{ ExpReportForm.to_location.label }} </label>
+                <label class="col TheadCurrency "> {{ ExpReportForm.Currency.label }} </label>
+                <label class="col TheadExRate "> {{ ExpReportForm.exchange_rate.label }} </label>
+                <label class="col TheadAMTO "> {{ ExpReportForm.orig_amount.label }} </label>
+                <label class="col TheadAMTL "> {{ ExpReportForm.local_amount.label }} </label>
+                <label class="col TheadOperate "> Operate </label>
+            </div>
+        </div>
+    </div>
+    <!--NEWREPORT界面-->
+
+    <!--TASKLIST界面-->
+    <div id="TaskList" class="panel panel-default" style="display:none">
+        <div class="panel-headling bg-body-tertiary" style="margin-top:10px">
+            <i class="bi bi-list-ul"></i>
+            TASK LIST
+        </div>
+        <div class="panel-body">
+            <div class="container text-center">
+                <div class="row row-cols-5 border border-dark rounded"
+                     style="margin-bottom:5px;--bs-border-opacity: .5;">
+                    <div class="col-1">#</div>
+                    <div class="col-4">Report Number</div>
+                    <div class="col-2">Create on</div>
+                    <div class="col-2">Option</div>
+                    <div class="col-3">Operate</div>
+                </div>
+                <div id="x">
+                    <div class="row row-cols-5 ReportLine border border-dark rounded"
+                         style="margin-bottom:5px;padding:10px 0;--bs-border-opacity: .5;">
+                        <div class="col-1 ReportLineIndex">1</div>
+                        <div class="col-4 ReportLineNumber">2</div>
+                        <div class="col-2 ReportLineCreateTime"></div>
+                        <div class="col-2 Option">
+                            <input class="form-check-input mt-0" type="checkbox" value="" style="vertical-align:middle">
+                            <p style="margin-left:10px;display:inline">Approve all</p>
+                        </div>
+                        <div class="col-3">
+                            <button class="btn btn-success btn-sm BtnSend" style="display:none" disabled>
+                                <i class="bi bi-person-fill-lock"></i>
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                    <table class="table table-striped table-bordered" style="display:none">
+                        <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">ExpTypI</th>
+                            <th scope="col">ExpTypII</th>
+                            <th scope="col">ExpDate</th>
+                            <th scope="col">FromL</th>
+                            <th scope="col">ToL</th>
+                            <th scope="col">Currency</th>
+                            <th scope="col">ExRate</th>
+                            <th scope="col">AMTO</th>
+                            <th scope="col">AMTL</th>
+                            <th scope="col">Des</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        <tr>
+                            <th> forloop.counter }}</th>
+                            <td> data.0 }}</td>
+                            <td> data.1 }}</td>
+                            <td> data.2.0.exp_date|date:"Y-m-d" }}</td>
+                            <td> data.2.0.from_location }}</td>
+                            <td> data.2.0.to_location }}</td>
+                            <td> data.2.0.Currency }}</td>
+                            <td> data.2.0.exchange_rate }}</td>
+                            <td> data.2.0.orig_amount }}</td>
+                            <td> data.2.0.local_amount }}</td>
+                            <td> data.2.0.description }}</td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--TASKLIST界面-->
+
+    <!--FormTemplate-->
+    <div id="FormTemplate" style="display: none">
+        <div id="FormLine" class="containerForm row row-cols-12">
+            <div class="FormArea col-11 border border-dark rounded" style="--bs-border-opacity: .5;">
+                <form id="ExpRepForm" method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="form-group row row-cols-11 " >
+                        <div class="RepFormLine col index"></div>
+                        <div class="RepFormLine col ExpTypI">
+                            <select class="form-control ExpTypI" name="ExpTypI" style="font-size: 10px;">
+                                <span class="error-msg" style="color: red"></span>
+                            </select>
+                            <span class="error-msg" style="color: red"></span>
+                        </div>
+                        <div class="RepFormLine col ExpTypII">
+                            <select class="form-control ExpTypII" name="ExpTypII" style="font-size: 10px;">
+                                <span class="error-msg" style="color: red"></span>
+                            </select>
+                            <span class="error-msg" style="color: red"></span>
+                        </div>
+                        <div class="RepFormLine col ExpTyp">
+                            {{ ExpReportForm.expenseTyp }}
+                            <span class="error-msg" style="color: red"></span>
+                        </div>
+                        <div class="RepFormLine col ExpDate datepicker">
+                            {{ ExpReportForm.exp_date }}
+                            <span class="error-msg" style="color: red"></span>
+                        </div>
+                        <div class="RepFormLine col FromL">
+                            {{ ExpReportForm.from_location }}
+                            <span class="error-msg" style="color: red"></span>
+                            <datalist id="FromL"></datalist>
+                        </div>
+                        <div class="RepFormLine col ToL">
+                            {{ ExpReportForm.to_location }}
+                            <span class="error-msg" style="color: red"></span>
+                            <datalist id="ToL"></datalist>
+                        </div>
+                        <div class="RepFormLine col Currency">
+                            {{ ExpReportForm.Currency }}
+                            <span class="error-msg" style="color: red"></span>
+                            <datalist id="Currency"></datalist>
+                        </div>
+                        <div class="RepFormLine col ExRate">
+                            {{ ExpReportForm.exchange_rate }}
+                            <span class="error-msg" style="color: red"></span>
+                        </div>
+                        <div class="RepFormLine col AMTO">
+                            {{ ExpReportForm.orig_amount }}
+                            <span class="error-msg" style="color: red"></span>
+                        </div>
+                        <div class="RepFormLine col AMTL">
+                            {{ ExpReportForm.local_amount }}
+                            <span class="error-msg" style="color: red"></span>
+                        </div>
+                    </div>
+                    <div class="form-group row row-cols-12">
+                        <div class="thead Des col-1" style="display: inline">
+                            <label style="font-size: 10px;"> DES </label>
+                        </div>
+                        <div class="RepFormLine Des  col-11" style="display: inline;float:right">
+                            {{ ExpReportForm.description }}
+                            <span class="error-msg" style="color: red"></span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-1 ButtonArea ">
+                <span style="width: 200px">
+                    <button type="button" class="btn btn-primary Dup">Duplicate</button>
+                    <button type="button" class="btn btn-danger Del">Delete</button>
+                </span>
+            </div>
+        </div>
+    </div>
+    <!--FormTemplate-->
+
+    <!--RowNumberModal-->
+    <div class="modal fade" id="RowNumberModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLiveLabel" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLiveLabel Add"> Please input number of rows </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group col">
+                        <input id="RowNumberInput" type="number" min="1" max="100" class="form-control">
+                        <span class="error-msg" style="color: red"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="BtnRowNumberSave" type="button" class="btn btn-primary">Confirm</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--RowNumberModal-->
+
+    <!--ExitConfirmModal-->
+    <div class="modal fade" id="ExitConfirmModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLiveLabel" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLiveLabel Confirm"> Exit without save </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>You can save your expense report and come back to continue edit lately.</p>
+                    <p>Click 'confirm', the expense editing will not be saved. </p>
+                </div>
+                <div class="modal-footer">
+                    <button id="BtnExitConfirm" type="button" class="btn btn-primary">Confirm</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--ExitConfirmModal-->
+
+</div>
+{% endblock %}
+{% block js %}
+<script type="text/javascript">
+    {#设置弹出提示框属性#}
+    toastr.options = {
+        closeButton: true,
+        debug: true,
+        progressBar: true,
+        positionClass: "toast-top-center",
+        onclick: null,
+        showDuration: "300",
+        hideDuration: "1000",
+        timeOut: "2000",
+        extendedTimeOut: "1000",
+        showEasing: "swing",
+        hideEasing: "linear",
+        showMethod: "fadeIn",
+        hideMethod: "fadeOut"
+    };
+    {#设置弹出提示框属性#}
+
+    {#global var#}
+    var content=''
+    var LineNumNow=0
+    var LineNum
+    var LineID
+    var ReportNumber
+    var ExpTypOpt={{ ExpTypOpt | safe }}
+    var ExpTypIIOpt;
+    var CityOpt = {{ CityOpt | safe }}
+    var CurrOpt = {{ CurrOpt | safe }}
+    var curDateTimestamp = new Date()
+    var curYear = curDateTimestamp.getFullYear()
+    var curMonth = curDateTimestamp.getMonth()+1
+    var curDay = curDateTimestamp.getDate()
+    var curDate = [curYear,curMonth,curDay].join("-")
+    var FunId=''
+    {#global var#}
+
+    {#初始事件绑定#}
+    $(function () {
+
+        {#Part A NewReport#}
+        {#1.1 ExpTypI initial#}
+        content=''
+        $.each(ExpTypOpt, function (key) {
+            content +="<option value='"+key+"'>"+key+"</option>"
+        })
+        $('#'+'FormTemplate').find("select.ExpTypI").html(content)
+        $("#FormTemplate select:eq(0)").find("Option:eq(0)").attr('selected',true)
+        {#1.1 ExpTypI initial#}
+
+        {#1.2 ExpTypII initial#}
+        content=''
+        ExpTypIIOpt=ExpTypOpt['Accommodation']
+        $.each(ExpTypIIOpt, function (i, item) {
+            content +="<option value=" + item + ">" + item + "</option>"
+        })
+        $('#'+'FormTemplate').find("select.ExpTypII").html(content)
+        $("#FormTemplate select:eq(1)").find("Option:eq(0)").attr('selected',true)
+        {#1.2 ExpTypII initial#}
+
+        {#1.3 ExpTyp initial#}
+
+        $("#FormTemplate select:eq(2)").find("Option:eq(1)").attr('selected',true)
+        $("#FormTemplate select:eq(2)").attr('style','font-size:10px')
+
+        {#1.3 ExpTyp initial#}
+
+
+        {#1.4 FromL ToL initial#}
+        content=''
+        $.each(CityOpt, function (i, item) {
+            content +="<option value=" + item + ">" + item + "</option>"
+        })
+        $('#FormTemplate').find("datalist#FromL").html(content)
+        $('#FormTemplate').find("datalist#ToL").html(content)
+        $("#FormTemplate input[name='from_location']").hide()
+        $("#FormTemplate input[name='to_location']").hide()
+        {#1.4 FromL ToL initial#}
+
+        {#1.5 Currency initial#}
+        $("#FormTemplate input[name='Currency']").attr("list",'Currency')
+        content=''
+        $.each(CurrOpt, function (i, item) {
+            content +="<option value=" + item + ">" + item + "</option>"
+        })
+        $('#FormTemplate').find("datalist#Currency").html(content)
+        {#1.5 Currency initial#}
+
+
+        {#2.1 ExpTypI change event#}
+        $('body').on('change', 'select.ExpTypI', function(){
+            var ExpTypI_Id=$(this).parent().attr("id")
+            var ExpTypISelected=$(this).find('option:selected').text()
+            var ExpTypII_Id=ExpTypI_Id.replace('I','II')
+            var ExpTypIISelected=$('#'+ExpTypII_Id+' select').find('option:selected').text()
+            var ExpTyp_Id=ExpTypI_Id.replace('I','')
+            var ExpTypIIOpt=ExpTypOpt[ExpTypISelected]
+
+            {#2.1.1 ExpTypII follow ExpTypI#}
+            $('#'+ExpTypII_Id+' select').empty()
+            content=''
+            $(this).children().attr('selected',false)
+            $(this).find("Option[value='"+ExpTypISelected+"']").attr('selected',true)
+            $.each(ExpTypIIOpt, function (i, item) {
+                content +="<option value=" + item + ">" + item + "</option>"
+            })
+            $('#NewExpRepEdit #'+ExpTypII_Id+' select').html(content)
+            $('#NewExpRepEdit #'+ExpTypII_Id+' select').trigger('change')
+            {#2.1.1 ExpTypII follow ExpTypI#}
+
+            {#2.1.3 FromTo follow ExpTypI#}
+            var FromToID=ExpTypI_Id.replace('ExpTypI','')
+            if (ExpTypISelected=='Transport') {
+                $("#NewExpRepEdit #"+FromToID+" input[name='from_location']").attr("readonly", false)
+                $("#NewExpRepEdit #"+FromToID+" input[name='to_location']").attr("readonly", false)
+                $("#NewExpRepEdit #"+FromToID+" input[name='from_location']").show()
+                $("#NewExpRepEdit #"+FromToID+" input[name='to_location']").show()
+            } else{
+                $("#NewExpRepEdit #"+FromToID+" input[name='from_location']").val("")
+                $("#NewExpRepEdit #"+FromToID+" input[name='to_location']").val("")
+                $("#NewExpRepEdit #"+FromToID+" input[name='from_location']").attr("readonly", true)
+                $("#NewExpRepEdit #"+FromToID+" input[name='to_location']").attr("readonly", true)
+                $("#NewExpRepEdit #"+FromToID+" input[name='from_location']").hide()
+                $("#NewExpRepEdit #"+FromToID+" input[name='to_location']").hide()
+            }
+            {#2.1.3 FromTo follow ExpTypI#}
+        })
+        {#2.1 ExpTypI change event#}
+
+        {#2.2 ExpTypII change event#}{#Expense TypeExp follow ExpTypI and ExpTypII#}
+        $('body').on('change', 'select.ExpTypII', function(){
+            var ExpTypII_Id=$(this).parent().attr("id")
+            var ExpTypIISelected=$(this).find('option:selected').text()
+            var ExpTypI_Id=ExpTypII_Id.replace('II','I')
+            var ExpTypISelected=$('#'+ExpTypI_Id+' select').find('option:selected').text()
+            var ExpTyp_Id=ExpTypII_Id.replace('II','')
+            $(this).children().attr('selected',false)
+            $(this).find("Option[value='"+ExpTypIISelected+"']").attr('selected',true)
+            $("#NewExpRepEdit #"+ExpTyp_Id+" select option").attr('selected',false)
+            $("#NewExpRepEdit #"+ExpTyp_Id+" select option[value='"+ExpTypISelected+"_"+ExpTypIISelected+"']").attr('selected',true)
+        })
+        {#2.2 ExpTypII change event#}
+
+        {#2.3 OriginalAmount and ExchangeRate change event: AutoCalculate#}
+        $('body').on('change', 'input[name="exchange_rate"]', function(){
+            AutoCalID=$(this).parent().parent().parent().parent().parent().attr("id")
+            AMTLocal=($('#NewExpRepEdit #'+AutoCalID+' input[name="exchange_rate"]').val()*$('#NewExpRepEdit #'+AutoCalID+' input[name="orig_amount"]').val())
+            $('#NewExpRepEdit #'+AutoCalID+' input[name="local_amount"]').val(AMTLocal)
+        })
+        $('body').on('change', 'input[name="orig_amount"]', function(){
+            AutoCalID=$(this).parent().parent().parent().parent().parent().attr("id")
+            AMTLocal=($('#NewExpRepEdit #'+AutoCalID+' input[name="exchange_rate"]').val()*$('#NewExpRepEdit #'+AutoCalID+' input[name="orig_amount"]').val())
+            $('#NewExpRepEdit #'+AutoCalID+' input[name="local_amount"]').val(AMTLocal)
+        })
+        {#2.3 OriginalAmount and ExchangeRate change event: AutoCalculate#}
+
+        {#2.4 Duplicate and delete click event#}
+        $('body').on('click', '.Dup', function(){
+            FunID=$(this).parent().parent().parent().attr("id")
+            $('#NewExpRepEdit #'+FunID).after($('#NewExpRepEdit #'+FunID).clone())
+            LineNumNow+=1
+            doIndexRenew();
+            OldDate=new Date(Date.parse($('#NewExpRepEdit #'+FunID+' input').eq(1).val()));
+            NewDateTimestamp=new Date(OldDate.setDate(OldDate.getDate()+1));
+            NewYear = NewDateTimestamp.getFullYear();
+            NewMonth = ('0'+(NewDateTimestamp.getMonth()+1)).slice(-2);
+            NewDay = ('0'+NewDateTimestamp.getDate()).slice(-2);
+            NewDate=[NewYear,NewMonth,NewDay].join("-");
+            $('#NewExpRepEdit #'+(parseInt(FunID)+1)+' input').eq(1).val(NewDate)
+        });
+        $('body').on('click', '.Del', function(){
+            FunID=$(this).parent().parent().parent().attr("id")
+            $('#NewExpRepEdit #'+FunID).remove();
+            LineNumNow-=1;
+            doIndexRenew();
+        });
+        {#2.4 Duplicate and delete click event#}
+        {#Part A NewReport#}
+
+        {#Part B ReportList#}
+
+        {#1.1 ReportLineNumber initial click event#}
+        $('body').on('click', '#ReportList .ReportLineNumber', function(){
+            if ($(this).parent().next().is(':hidden')){
+                $(this).parent().next().show()
+            }else{
+                $(this).parent().next().hide()
+            }
+        })
+        {#1.1 ReportLineNumber initial click event#}
+
+        {#1.2 BtnEditSendDelete initial ShowHide#}
+        $.each($('#ReportList .ReportLineStatus'), function (i, item) {
+            if ($('#ReportList .ReportLineStatus').eq(i).text()=='Draft'){
+                $('#ReportList .ReportLineStatus').eq(i).next().children().show()
+                $('#ReportList .ReportLineStatus').eq(i).next().children().attr('disabled', false)
+            }
+        })
+        {#1.2 BtnEditSendDelete initial ShowHide#}
+
+        {#1.3 BtnSend click event#}
+        $('body').on('click', '#ReportList .BtnSend', function(){
+            ReportNumber=$(this).parent().parent().children('.ReportLineNumber').text()
+            $.ajax({
+                url: '/index/expense/reimb',
+                type: 'post',
+                data: {
+                        ReportOperate: 'BtnSend',
+                        ReportNumber: ReportNumber,
+                    },
+                dataType:'JSON',
+                success: function (res){
+                    if (res.status) {
+                        toastr.success('success');
+                        window.setTimeout(function (){
+                                window.location.reload();
+                        },2000);
+                    }
+                },
+                error : function() {
+                    toastr.warning("something goes wrong");
+                }
+            })
+            ReportNumber=''
+        })
+        {#1.3 BtnSend click event#}
+
+        {#1.4 BtnEdit click event#}
+        $('body').on('click', '#ReportList .BtnEdit', function(){
+            ReportNumber=$(this).parent().parent().children('.ReportLineNumber').text()
+            $.ajax({
+                url: '/index/expense/reimb',
+                type: 'post',
+                data: {
+                        ReportOperate: 'BtnEdit',
+                        ReportNumber: ReportNumber,
+                    },
+                dataType:'JSON',
+                success: function (res){
+                    if (res.status) {
+                        EditReportJson=JSON.parse(res.EditReport)
+                        LineNum=EditReportJson.length
+                        doRowAdd()
+                        $("#BtnNewExpReport").hide()
+                        $("#BtnExpReportApproveTask").hide()
+                        $("#BtnNewExpReportSave").show()
+                        $("#BtnNewExpReportExit").show()
+
+                        $("#NewExpRepEdit").show()
+                        $("#ReportList").hide()
+
+                        $.each(EditReportJson, function(index, value){
+                            ExpTyp=value.fields.expenseTyp.split('_')
+                            ExpTypI=ExpTyp[0]
+                            ExpTypII=ExpTyp[1]
+                            $("#NewReport #ExpTypI"+(index+1)+" select option[value='"+ExpTypI+"']").attr('selected',true)
+                            $("#NewReport #ExpTypI"+(index+1)+" select").trigger('change')
+                            $("#NewReport #ExpTypII"+(index+1)+" select option[value='"+ExpTypII+"']").attr('selected',true)
+                            $("#NewReport #"+(index+1)).find("input[name='exp_date']").val(value.fields.exp_date)
+                            $("#NewReport #"+(index+1)).find("input[name='from_location']").val(value.fields.from_location)
+                            $("#NewReport #"+(index+1)).find("input[name='to_location']").val(value.fields.to_location)
+                            $("#NewReport #"+(index+1)).find("input[name='Currency']").val(value.fields.Currency)
+                            $("#NewReport #"+(index+1)).find("input[name='exchange_rate']").val(value.fields.exchange_rate)
+                            $("#NewReport #"+(index+1)).find("input[name='orig_amount']").val(value.fields.orig_amount)
+                            $("#NewReport #"+(index+1)).find("input[name='local_amount']").val(value.fields.local_amount)
+                            $("#NewReport #"+(index+1)).find("input[name='description']").val(value.fields.description)
+                        })
+                    }
+                },
+                error : function() {
+                    toastr.warning("something goes wrong");
+                }
+            })
+        })
+        {#1.4 BtnEdit click event#}
+
+        {#1.5 BtnDelete click event#}
+        $('body').on('click', '#ReportList .BtnDelete', function(){
+            ReportNumber=$(this).parent().parent().children('.ReportLineNumber').text()
+            $.ajax({
+                url: '/index/expense/reimb',
+                type: 'post',
+                data: {
+                        ReportOperate: 'BtnDelete',
+                        ReportNumber: ReportNumber,
+                    },
+                dataType:'JSON',
+                success: function (res){
+                    if (res.status) {
+                        toastr.success('success');
+                        window.setTimeout(function (){
+                                window.location.reload();
+                        },2000);
+                    }
+                },
+                error : function() {
+                    toastr.warning("something goes wrong");
+                }
+            })
+            ReportNumber=''
+        })
+        {#1.5 BtnDelete click event#}
+
+        {#Part B ReportList#}
+    })
+
+    {#初始事件绑定#}
+
+
+    {#1 NewExpReport ReportList Tasklist Switch#}
+        {# NewExpReport #}
+        $("#BtnNewExpReport").click(function () {
+            $("#BtnNewExpReport").hide()
+            $("#BtnExpReportApproveTask").hide()
+            $("#BtnNewExpReportSave").show()
+            $("#BtnNewExpReportExit").show()
+
+            $("#NewExpRepEdit").show()
+            $("#ReportList").hide()
+
+        })
+        {# NewExpReport #}
+
+        {# Tasklist #}
+        $("#BtnExpReportApproveTask").click(function () {
+            $("#BtnNewExpReport").hide()
+            $("#BtnExpReportApproveTask").hide()
+            $("#BtnTaskListExit").show()
+
+            $("#TaskList").show()
+            $("#ReportList").hide()
+
+        });
+        {# Tasklist #}
+
+        {# Exit NewExpReport #}
+        $("#BtnNewExpReportExit").click(function () {
+            $("#ExitConfirmModal").modal('show')
+        });
+        $("#BtnExitConfirm").click(function () {
+            $("#ExitConfirmModal").modal('hide');
+            $('#NewReport>div').each(function(i){
+                if (i!=0) {
+                    $(this).remove()
+                }
+            })
+            LineNumNow=0
+            $("#BtnNewExpReport").show()
+            $("#BtnExpReportApproveTask").show()
+            $("#BtnNewExpReportSave").hide()
+            $("#BtnNewExpReportExit").hide()
+
+            $("#NewExpRepEdit").hide()
+            $("#ReportList").show()
+
+        });
+        {# Exit NewExpReport #}
+
+        {# Exit TaskList #}
+        $("#BtnTaskListExit").click(function () {
+            $("#BtnNewExpReport").show()
+            $("#BtnExpReportApproveTask").show()
+            $("#BtnTaskListExit").hide()
+
+            $("#TaskList").hide()
+            $("#ReportList").show()
+
+        });
+        {# Exit TaskList #}
+
+        {# Save #}
+        $("#BtnNewExpReportSave").click(function () {
+            $('.error-msg').text('')
+            if ($('#NewReport form').serialize()) {
+                $.ajax({
+                    url: '/index/expense/reimb',
+                    type: 'post',
+                    data: $('#NewReport form').serialize()+"&ReportOperate="+"BtnNewExpReportSave"+"&ReportNumber="+ReportNumber,
+                    dataType:'JSON',
+                    success: function (res){
+                        if (res.status) {
+                            toastr.success('success');
+                            window.setTimeout(function (){
+                                    window.location.reload();
+                            },2000);
+                        } else {
+                            for (i=0; i < res.errorlist.length; i++){
+                                $.each(res.errorlist[i], function(key, value){
+                                    $('#NewReport #'+(i+1)+' input[name="'+key+'"]').next().text(value)
+                                })
+                            }
+                        }
+                    },
+                    error : function() {
+                        toastr.warning("something goes wrong")
+                    }
+                })
+            }else{
+                toastr.warning("please fill your expense report first")
+            }
+        })
+        {# Save #}
+    {#1 NewExpReport ReportList Tasklist Switch#}
+
+
+    {#2 ExpReportLineItem addrow#}
+    {#2.1 ExpReportLineItem addonerow#}
+    $("#AddOneRow").click(function () {
+        LineNum=1
+        doRowAdd()
+    });
+    {#2.1 ExpReportLineItem addonerow#}
+
+    {#2.2 ExpReportLineItem addrows#}
+    $("#AddRows").click(function () {
+        $("#RowNumberModal").modal('show')
+    });
+    $("#BtnRowNumberSave").click(function () {
+        $("#RowNumberModal").modal('hide')
+        LineNum=$("#RowNumberInput").val()
+        $("#RowNumberInput").val('')
+        doRowAdd()
+    });
+    {#2.2 ExpReportLineItem addrows#}
+
+    {#2.3 ExpReportLineItem rowadd main#}
+    function doRowAdd() {
+        LineID=LineNumNow
+        for (i=0; i < LineNum; i++){
+            form_content=""
+            form_content=$('#FormTemplate').prop("innerHTML")
+            LineID+= 1
+            var form_content_update=$(form_content).show()
+            form_content_update.prop("id",LineID).end()
+            form_content_update.find("div form").prop("id",'ExpRepForm'+LineID).end()
+            form_content_update.find("div.index").html(LineID)
+            form_content_update.find("div.ExpTypI").prop("id",'ExpTypI'+LineID).end()
+            form_content_update.find("div.ExpTypII").prop("id",'ExpTypII'+LineID).end()
+            form_content_update.find("div.ExpTyp").prop("id",'ExpTyp'+LineID).end()
+            form_content_update.find("input[name='from_location']").attr("list",'FromL').end()
+            form_content_update.find("input[name='to_location']").attr("list",'ToL').end()
+            $('#NewReport').append(form_content_update)
+            $("#NewReport #"+LineID+" input[name='exp_date']").val(curDate)
+            $("#NewReport #"+LineID+" input[name='Currency']").val('CNY')
+            LineNumNow+=1
+        }
+        $('#NewReport').find('input[name="exp_date"]').datepicker({
+            changeMonth: true,
+            changeYear: true,
+            dateFormat:'yy-mm-dd',
+            minDate: -90,
+        })
+    }
+    {#2.3 ExpReportLineItem rowadd main#}
+    {#2 ExpReportLineItem addrow#}
+
+
+
+    {#3 index renew function#}
+    function doIndexRenew(){
+        {#3.1 index null#}
+        $('#NewReport>div').removeAttr('id')
+        $('#NewReport form').removeAttr('id')
+        $('#NewReport div.index').empty()
+        $('#NewReport div.ExpTypI').removeAttr('id')
+        $('#NewReport div.ExpTypII').removeAttr('id')
+        $('#NewReport div.ExpTyp').removeAttr('id')
+        {#index null#}
+
+        {#3.2 index fill#}
+        $('#NewReport>div').each(function(i){
+            if (i!=0) {
+                $(this).attr('id', i)
+                $(this).children('.FormArea').children().attr('id', 'ExpRepForm'+ i)
+                $(this).children('.FormArea').children().children('.row-cols-11').children('.index').html(i)
+                $(this).children('.FormArea').children().children('.row-cols-11').children('.ExpTypI').attr('id', 'ExpTypI'+ i)
+                $(this).children('.FormArea').children().children('.row-cols-11').children('.ExpTypII').attr('id', 'ExpTypII'+ i)
+                $(this).children('.FormArea').children().children('.row-cols-11').children('.ExpTyp').attr('id', 'ExpTyp'+ i)
+            }
+        })
+        {#index fill#}
+    }
+    {#3 index renew function#}
+
+
+</script>
+{% endblock %}
