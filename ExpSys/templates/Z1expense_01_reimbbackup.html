@@ -1,0 +1,612 @@
+{% extends "expense_temp.html" %}
+
+{% block content %}
+{% block css %}
+
+{% endblock %}
+<div>
+    <!--功能区_button-->
+    <div class="=container">
+        <a id="BtnNewExpReport" class="btn btn-outline-primary" style="margin-top:10px">
+            <i class="bi bi-ui-checks-grid"></i>
+            NEW EXPENSE REPORT
+        </a>
+        <a id="BtnNewExpReportSave" class="btn btn-outline-primary" style="margin-top:10px; display: None">
+            <i class="bi bi-ui-checks-grid"></i>
+            SAVE
+        </a>
+        <a id="BtnNewExpReportExit" class="btn btn-outline-primary" style="margin-top:10px; display: None">
+            <i class="bi bi-ui-checks-grid"></i>
+            EXIT
+        </a>
+    </div>
+    <!--功能区_button-->
+
+    <!--REPORTLIST界面-->
+    <div id="ExpenseTypDiv" class="panel panel-default" style="display:none;">
+        <div class="panel-headling bg-body-tertiary" style="margin-top:10px">
+            <i class="bi bi-list-ul"></i>
+            EXPENSE REPORT LIST
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped table-bordered">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Expense_Typ_level 1</th>
+                    <th scope="col">Expense_Typ_level 2</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Operate</th>
+                </tr>
+                </thead>
+
+                {% for obj in querySet %}
+                <tr>
+                    <th>{{ obj.id }}</th>
+                    <td>{{ obj.expense_type_level1 }}</td>
+                    <td>{{ obj.expense_type_level2 }}</td>
+                    <td>{{ obj.get_status_display }}</td>
+                    <td>
+                        <button uid="{{ obj.id }}" class="btn btn-primary btn-sm BtnEdit">
+                            <i class="bi bi-pencil-fill"></i>
+                            Edit
+                        </button>
+
+                        {% if obj.status == 1 %}
+                        <button uid="{{ obj.id }}" class="btn btn-success btn-sm BtnDeactive">
+                            <i class="bi bi-person-fill-lock"></i>
+                            active
+                        </button>
+                        {% else %}
+                        <button uid="{{ obj.id }}" class="btn btn-danger btn-sm BtnActive">
+                            <i class="bi bi-person-fill-gear">
+                                deactive
+                            </i>
+                        </button>
+                        {% endif %}
+
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <th></th>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        <button class='btn btn-secondary btn-sm BtnAddExpenseType'>
+                            <i class='bi bi-pencil-fill'></i>
+                            Add
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <!--REPORTLIST界面-->
+
+    <!--NEWREPORT界面-->
+    <div id="NewExpRepEdit" class="panel panel-default" style="display:None">
+        <div class="panel-headling bg-body-tertiary clearfix" style="margin-top:10px;margin-bottom:20px;">
+            <span style="height:500px">
+                <i class="bi bi-list-ul"></i>
+                NEW EXPENSE REPORT EDITING
+            </span>
+            <span class="float-end">
+                <button id="AddOneRow" type="button" class="btn btn-primary">Add one row</button>
+                <button ID="AddRows" type="button" class="btn btn-primary">Add rows</button>
+            </span>
+        </div>
+
+        <div class="panel-body">
+            <table class="table table-striped table-bordered">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">ExpTyp I</th>
+                    <th class="col">ExpTyp II</th>
+                    <th class="col">Date</th>
+                    <th class="col">From</th>
+                    <th class="col">To</th>
+                    <th class="col">Currency</th>
+                    <th class="col">Exchange Rate</th>
+                    <th class="col">Original Amount</th>
+                    <th class="col">Local Amount</th>
+                    <th class="col">Description</th>
+                    <th class="col">Operate</th>
+
+                </tr>
+                </thead>
+
+                <tbody id="ReportLineItem">
+
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!--NEWREPORT界面-->
+
+    <!--RowNumberModal-->
+    <div class="modal fade" id="RowNumberModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLiveLabel" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLiveLabel Add"> Please input number of rows </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group col">
+                        <input id="RowNumberInput" type="number" min="1" max="100" class="form-control">
+                        <span class="error-msg" style="color: red"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="BtnRowNumberSave" type="button" class="btn btn-primary">Confirm</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--RowNumberModal-->
+
+    <!--ExitConfirmModal-->
+    <div class="modal fade" id="ExitConfirmModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLiveLabel" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLiveLabel Confirm"> Exit without save </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>You can save your expense report and come back to continue edit lately.</p>
+                    <p>Click 'confirm', the expense editing will not be saved. </p>
+                </div>
+                <div class="modal-footer">
+                    <button id="BtnExitConfirm" type="button" class="btn btn-primary">Confirm</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--ExitConfirmModal-->
+
+</div>
+{% endblock %}
+{% block js %}
+<script type="text/javascript">
+    {#设置弹出提示框属性#}
+    toastr.options = {
+        closeButton: true,
+        debug: true,
+        progressBar: true,
+        positionClass: "toast-top-center",
+        onclick: null,
+        showDuration: "300",
+        hideDuration: "1000",
+        timeOut: "2000",
+        extendedTimeOut: "1000",
+        showEasing: "swing",
+        hideEasing: "linear",
+        showMethod: "fadeIn",
+        hideMethod: "fadeOut"
+    };
+    {#设置弹出提示框属性#}
+
+
+    {#global var#}
+     var LineNumNow
+     var LineNum
+     var ExpTypOpt
+     var ExpTypIIOpt
+     var CityOpt;
+     var CurrOpt;
+     var curDateTimestamp = new Date();
+     var curYear = curDateTimestamp.getFullYear();
+     var curMonth = curDateTimestamp.getMonth()+1;
+     var curDay = curDateTimestamp.getDate();
+     var curDate = [curYear,curMonth,curDay].join("-")
+    {#global var#}
+
+
+    LineNumNow=0
+
+    {#事件绑定#}
+    $(function () {
+
+
+    })
+    {#事件绑定#}
+    $( "#datepicker" ).datepicker({
+        showButtonPanel: true,
+        changeMonth: true,
+        changeYear: true,
+        dateFormat:'yy-mm-dd',
+        minDate: -90,
+    });
+
+    var nowDate= new Date();
+    var year = nowDate.getFullYear();
+    var month = nowDate.getMonth()+1;
+    var day = nowDate.getDate();
+    var nowStandard=([year, month, day].join('-'));
+
+    var defaultDate = document.querySelectorAll('#datepicker');
+    for (var i =0 ; i <defaultDate.length; i++){
+        defaultDate[i].value= nowStandard;
+    }
+
+
+    {#1 NewExpReport Switch#}
+        $("#BtnNewExpReport").click(function () {
+            $("#BtnNewExpReport").hide();
+            $("#NewExpRepEdit").show();
+            $("#BtnNewExpReportSave").show();
+            $("#BtnNewExpReportExit").show();
+            $.ajax({
+                url: '/index/expense/reimb',
+                type: 'get',
+                data: {
+                    ExpenseTyp: 'ExpTypGET',
+                    },
+                dataType:'JSON',
+                success: function (res){
+                    if (res.status) {
+                        ExpTypOpt=res.ExpTypeOpt;
+                        CityOpt=res.CityOpt;
+                        CurrOpt=res.CurrOpt;
+                    } else {
+                        toastr.warning(res.error);
+                    }
+                },
+                error : function() {
+                    toastr.warning("something goes wrong");
+                }
+            });
+        });
+
+        $("#BtnNewExpReportSave").click(function () {
+            $("#BtnNewExpReport").show();
+            $("#NewExpRepEdit").hide();
+            $("#BtnNewExpReportSave").hide();
+            $("#BtnNewExpReportExit").hide();
+        });
+        $("#BtnNewExpReportExit").click(function () {
+            $("#ExitConfirmModal").modal('show');
+        });
+        $("#BtnExitConfirm").click(function () {
+            $("#ExitConfirmModal").modal('hide');
+            $("#ReportLineItem").empty();
+            $("#BtnNewExpReport").show();
+            $("#NewExpRepEdit").hide();
+            $("#BtnNewExpReportSave").hide();
+            $("#BtnNewExpReportExit").hide();
+        });
+    {#1 NewExpReport Switch#}
+
+    {#2 ExpReportLineItem addrow function#}
+
+        {#2.1 ExpReportLineItem addonerow function#}
+        $("#AddOneRow").click(function () {
+            LineNum=1;
+            doRowAdd();
+
+        });
+        {#2.1 ExpReportLineItem addonerow function#}
+
+        {#2.2 ExpReportLineItem addrows function#}
+        $("#AddRows").click(function () {
+            $("#RowNumberModal").modal('show');
+        });
+        $("#BtnRowNumberSave").click(function () {
+            $("#RowNumberModal").modal('hide');
+            LineNum=$("#RowNumberInput").val();
+            $("#RowNumberInput").val('');
+            doRowAdd();
+
+        });
+        {#2.2 ExpReportLineItem addrows function#}
+
+        {#2.3 ExpReportLineItem row add main function#}
+        function doRowAdd() {
+            {#2.3.1 insert line#}
+            i=0;
+            Lineid=0;
+            Lineid+=LineNumNow;
+            do {
+                td_content="";
+                i+=1;
+                Lineid+= 1;
+                {#1. Tr#}
+                $('#ReportLineItem').append('<tr id='+ Lineid + '><th>'+ Lineid + '</th></>tr>');
+
+                {#2. Form#}
+                var form=$('<form></form>');
+                form.attr('id', 'NewExpRepEditForm'+Lineid );
+                form.attr('method', 'post');
+                form.attr('class', 'row');
+                form.attr('noValidate',true);
+                $('#'+ Lineid).append(form);
+                $('#NewExpRepEditForm'+Lineid).append('{% csrf_token %}');
+
+                {#3. ExpTypI and ExpTypII#}
+                td_content="";
+                td_content+='<td><div class="form-group col">\
+                            <select class="form-control" name="ExpTypI" id="ExpTypI'+Lineid+'">\
+                            </select><span class="error-msg" style="color: red"></span></div></td>'
+                $('#'+Lineid).append(td_content);
+
+                td_content="";
+                td_content+='<td><div class="form-group col">\
+                            <select class="form-control" name="ExpTypII" id="ExpTypII'+Lineid+'">\
+                            </select><span class="error-msg" style="color: red"></span></div></td>'
+                $('#'+Lineid).append(td_content);
+
+                {#4. Datetime#}
+                td_content="";
+                td_content+='<td><div class="form-group col"><input id="'+ Lineid + '4" type="text" class="form-control datepicker">\
+                             <span class="error-msg" style="color: red"></span></div></td>'
+                $('#'+ Lineid).append(td_content);
+
+                {#5. From to#}
+                for (j=0; j < 2; j++){
+                    td_content="";
+                    td_content+='<td><div class="form-group col"><input id="'+ Lineid + (j+5) +'" list="name'+ Lineid + (j+5) +'" type="text" class="form-control">\
+                                <datalist id="name'+ Lineid + (j+5) +'"></datalist><span class="error-msg" style="color: red"></span></div></td>'
+                    $('#'+ Lineid).append(td_content);
+                };
+
+                {#6. Currency#}
+                td_content="";
+                td_content+='<td><div class="form-group col"><input id="'+ Lineid + 7 +'" list="name'+ Lineid + 7 +'" type="text" class="form-control">\
+                            <datalist id="name'+ Lineid + 7 +'"></datalist><span class="error-msg" style="color: red"></span></div></td>'
+                $('#'+ Lineid).append(td_content);
+
+                {#7. ExchangeRate OriginalAmount#}
+                for (j=0; j < 2; j++){
+                    td_content="";
+                    td_content+='<td><div class="form-group col"><input id="'+ Lineid + (j+8) +'" list="name'+ Lineid + (j+8) +'" type="number" class="form-control">\
+                                <datalist id="name'+ Lineid + (j+8) +'"></datalist><span class="error-msg" style="color: red"></span></div></td>'
+                    $('#'+ Lineid).append(td_content);
+                };
+
+                {#8. LocalAmount#}
+                td_content="";
+                td_content+='<td><div class="form-group col"><input id="'+ Lineid + 10 +'" list="name'+ Lineid + 10 +'" type="number" class="form-control" readonly="readonly">\
+                            <datalist id="name'+ Lineid + 10 +'"></datalist><span class="error-msg" style="color: red"></span></div></td>'
+                $('#'+ Lineid).append(td_content);
+
+                {#9. Description#}
+                td_content="";
+                td_content+='<td><div class="form-group col"><input id="'+ Lineid + 11 +'" list="name'+ Lineid + 11 +'" type="text" class="form-control">\
+                            <datalist id="name'+ Lineid + 11 +'"></datalist><span class="error-msg" style="color: red"></span></div></td>'
+                $('#'+ Lineid).append(td_content);
+
+                {#12. Button#}
+                td_content="";
+                td_content+='<td id="'+ Lineid + '12"><button id="Dup'+Lineid+'" type="button" class="btn btn-primary">Duplicate</button>\
+                            <button id="Del'+Lineid+'" type="button" class="btn btn-danger">Delete</button></td>'
+                $('#'+ Lineid).append(td_content);
+                LineNumNow+=1;
+            }
+            while (i<LineNum);
+            {#2.3.1 insert line#}
+
+            {#2.3.2 insert ExptypI selection#}
+            for (k=LineNumNow-LineNum; k < LineNumNow; k++){
+                {#1 ExpTypI#}
+                var content='';
+                l=k+1
+                $.each(ExpTypOpt, function (key) {
+                    content +="<option value=" + key + ">" + key + "</option>"
+                })
+                $(' #ExpTypI'+ l).html(content);
+
+                {#2 From to#}
+                var content='';
+                l=k+1
+                $.each(CityOpt, function (i, item) {
+                    content +="<option value=" + item + ">" + item + "</option>"
+                })
+                $('#name'+ l + 5).html(content);
+                $('#name'+ l + 6).html(content);
+
+                {#3 Currency#}
+                var content='';
+                l=k+1
+                $.each(CurrOpt, function (i, item) {
+                    content +="<option value=" + item + ">" + item + "</option>"
+                })
+                $(' #name'+ l +7).html(content);
+
+                {#4 Exchange Rate and Currency#}
+                $('#'+ l +8).val(1);
+                $('#'+ l +7).attr('placeholder','CNY');
+                $('#'+ l +4).attr('placeholder',curDate);
+            }
+            {#2.3.2 insert ExptypI selection#}
+
+            {#2.3.3 initial event#}
+            for (k=LineNumNow-LineNum; k < LineNumNow; k++){
+                l=k+1;
+                {#ExpTypI change ExpTypII#}
+                $('#ExpTypI'+l).off('click').on('change', ExpTypIChange);
+                $('#ExpTypI'+l).off('click').on('change', ExpTypIChange);
+                {#ExpTypI change ExpTypII#}
+
+                $('.datepicker').off('focus').on('focus', datepickerFocus);
+
+                {#FromTo not editable#}
+                $('#'+l+5).css({"background-color": "#9C9C9C"});
+                $('#'+l+5).attr("readonly", true);
+                $('#'+l+6).css({"background-color": "#9C9C9C"});
+                $('#'+l+6).attr("readonly", true);
+                {#FromTo not editable#}
+            }
+
+            function ExpTypIChange(){
+                var ChangeId=$(this).attr("id");
+                var ExpTypISelected=$(this).find('option:selected').text();
+
+                {#FromTo editable#}
+                var FromToID=ChangeId.replace('ExpTypI','')
+                var l=ChangeId.substring(7)
+                if (ExpTypISelected=='Transport') {
+                    $('#'+FromToID+5).css({"background-color": "#ffff"});
+                    $('#'+FromToID+5).attr("readonly", false);
+                    $('#'+FromToID+6).css({"background-color": "#ffff"});
+                    $('#'+FromToID+6).attr("readonly", false);
+                    var content='';
+                    $.each(CityOpt, function (i, item) {
+                        content +="<option value=" + item + ">" + item + "</option>"
+                    })
+                    $('#name'+ l + 5).html(content);
+                    $('#name'+ l + 6).html(content);
+
+                } else{
+                    $('#'+FromToID+5).val("");
+                    $('#'+FromToID+6).val("");
+                    $('#'+FromToID+5).css({"background-color": "#9C9C9C"});
+                    $('#'+FromToID+5).attr("readonly", true);
+                    $('#'+FromToID+6).css({"background-color": "#9C9C9C"});
+                    $('#'+FromToID+6).attr("readonly", true);
+
+
+                };
+                {#FromTo editable#}
+
+                {#ExpTypI change ExpTypII#}
+                var ExpTypIIID=ChangeId.replace('I','II')
+                var ExpTypIIOpt=ExpTypOpt[ExpTypISelected]
+                $('#'+ExpTypIIID).empty();
+                var content='';
+                $.each(ExpTypIIOpt, function (i, item) {
+                    content +="<option value=" + item + ">" + item + "</option>"
+                })
+                $('#'+ExpTypIIID).html(content);
+                {#ExpTypI change ExpTypII#}
+            }
+            {#2.3.3 initial event#}
+
+            {#2.3.4 DateTime initial#}
+            function datepickerFocus () {
+                $( ".datepicker" ).datepicker({
+                    showButtonPanel: true,
+                    changeMonth: true,
+                    changeYear: true,
+                    dateFormat:'yy-mm-dd',
+                    minDate: -90,
+                });
+
+                var nowDate= new Date();
+                var year = nowDate.getFullYear();
+                var month = nowDate.getMonth()+1;
+                var day = nowDate.getDate();
+                var nowStandard=([year, month, day].join('-'));
+
+                var defaultDate = document.querySelectorAll('.datepicker');
+                for (var i =0 ; i <defaultDate.length; i++){
+                    defaultDate[i].value= nowStandard;
+                }
+            }
+            {#2.3.4 DateTime initial#}
+
+            {#2.3.5 insert Local amount auto calculate onchange event#}
+            for (k=LineNumNow-LineNum; k < LineNumNow; k++){
+                l=k+1;
+                $('#'+l+8).off('click').on('change', AutoCalculate);
+                $('#'+l+9).off('click').on('change', AutoCalculate);
+            }
+            {#2.3.5 insert Local amount auto calculate onchange event#}
+
+            {#2.3.6 AutoCalculate function#}
+            function AutoCalculate(){
+                var OperateAutoCalculateId=$(this).attr("id").slice(0,-1);
+                var ExchangeRate=$('#'+OperateAutoCalculateId+8).val();
+                var AmountOriginal=$('#'+OperateAutoCalculateId+9).val();
+                AmountLocal=(ExchangeRate*AmountOriginal);
+                $('#'+OperateAutoCalculateId+10).val(AmountLocal);
+            }
+            {#2.3.6 AutoCalculate function#}
+
+            {#2.3.7 bind ExpReportLineItem duplicate and delete event#}
+            for (k=LineNumNow-LineNum; k < LineNumNow; k++){
+                l=k+1;
+                $('#Dup'+l).off('click').on('click', dupdel);
+                $('#Del'+l).off('click').on('click', dupdel);
+            }
+            {#2.3.7 bind ExpReportLineItem duplicate and delete event#}
+
+            {#2.3.8 duplicate and delete function#}
+            function dupdel(){
+                var OperateId=$(this).attr("id");
+                var Opfun=OperateId.substring(0,3);
+                var Opid=OperateId.substring(3);
+                if (Opfun=='Dup') {
+                    for (k=4; k < 13; k++){
+                        content= $('#'+Opid+k).val();
+                    }
+<!--                    $('#Opid td').each(function(i){-->
+<!--                        $(this).attr('id', i+1)-->
+<!--                    });-->
+<!--                    $.each(res.Typ, function (i, item) {-->
+<!--                        content +="<option value=" + item + ">" + item + "</option>"-->
+<!--                    })-->
+<!--                    $('#'+res.SelectedId).html(content);-->
+                } else {
+                    $('#'+Opid).remove();
+                    LineNumNow-=1;
+
+                    {#index null#}
+                    $('#ReportLineItem tr').removeAttr('id');
+                    $('#ReportLineItem th').empty();
+                    $('#ReportLineItem form').removeAttr('id');
+                    $('#ReportLineItem select').removeAttr('id');
+                    $('#ReportLineItem input').removeAttr('id');
+                    $('#ReportLineItem td').removeAttr('id');
+                    $('#ReportLineItem input').removeAttr('list');
+                    $('#ReportLineItem datalist').removeAttr('id');
+                    $('#ReportLineItem .btn-primary').removeAttr('id');
+                    $('#ReportLineItem .btn-danger').removeAttr('id');
+
+                    {#index null#}
+
+                    {#index fill#}
+                    $('#ReportLineItem tr').each(function(i){
+                        $(this).attr('id', i+1);
+                        $(this).children('th').html(i+1);
+                        $(this).children('form').attr('id', 'NewExpRepEditForm'+ (i+1));
+                        $(this).children('td').eq(0).children('div').children('select').attr('id', 'ExpTypI'+ (i+1));
+                        $(this).children('td').eq(1).children('div').children('select').attr('id', 'ExpTypII'+ (i+1));
+                        for (k=4; k < 12; k++){
+                            $(this).children('td').eq(k-2).children('div').children('input').attr('id', (i+1) + '' +k);
+                        }
+                        for (k=5; k < 11; k++){
+                            $(this).children('td').eq(k-2).children('div').children('input').attr('list', 'name'+ (i+1) +k);
+                            $(this).children('td').eq(k-2).children('div').children('datalist').attr('id', (i+1) + '' +k);
+                        }
+                        $(this).children('td').children('button').eq(0).attr('id', 'Dup'+ (i+1));
+                        $(this).children('td').children('button').eq(1).attr('id', 'Del'+ (i+1));
+
+                    });
+                    {#index fill#}
+                }
+            }
+            {#2.3.8 duplicate and delete function#}
+
+        }
+    {#2 ExpReportLineItem addrow function#}
+
+
+
+    {#3 function#}
+
+
+
+    {#3 function#}
+
+
+</script>
+{% endblock %}

@@ -1,0 +1,365 @@
+{% extends "expense_temp.html" %}
+
+{% block content %}
+{% block css %}
+
+{% endblock %}
+<div>
+    <!--新增用户_button-->
+    <div class="=container">
+        <a id="BtnNewUserAdd" class="btn btn-outline-primary" style="margin-top:10px">
+            <i class="bi bi-person-fill-add" style="margin-right:10px"></i>
+            Add new
+        </a>
+    </div>
+    <!--新增用户_button-->
+
+    <!--新增用户User，弹出modal对话框_开始-->
+    <div class="modal fade" id="NewUserAddModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLiveLabel" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 id="typeSave" class="modal-title fs-5" id="staticBackdropLiveLabel save">Add NewUser</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <form id="SaveUserForm" method="post" class="row row-cols-2" novalidate>
+                            {% csrf_token %}
+
+                            {% for field in formSave %}
+                            <div class="form-group col">
+                                <label> {{ field.label }} </label>
+                                {{ field }}
+                                <span id="SaveUserEM" class="error-msg" style="color: red"></span>
+                            </div>
+
+                            {% endfor %}
+                        </form>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button id="BtnNewUserSave" type="button"  class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--新增用户，弹出modal对话框_结束-->
+
+    <!--编辑用户User，弹出modal对话框_开始-->
+    <div class="modal fade" id="EditUserAddModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLiveLabel" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 id="typeEdit" class="modal-title fs-5" id="staticBackdropLiveLabel Edit">Edit User</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <form id="EditUserForm" method="post" class="row row-cols-2" novalidate>
+                            {% csrf_token %}
+
+                            {% for field in formEdit %}
+                            <div class="form-group col">
+                                <label> {{ field.label }} </label>
+                                {{ field }}
+                                <span id="UserEM" class="error-msg" style="color: red"></span>
+                            </div>
+
+                            {% endfor %}
+                        </form>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button id="BtnEditUserSave" type="button"  class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--编辑用户，弹出modal对话框_结束-->
+
+    <!--冻结或激活用户User，弹出modal对话框_开始-->
+    <div class="modal fade" id="UserSwitchModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"> Please confirm </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="UserSwitchtext">
+            <p>If you deactive or active User, User lose accesss to the expense system.</p>
+          </div>
+          <div class="modal-footer">
+            <button id="BtnSwitchUserSave" type="button" class="btn btn-primary"> Confirm </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--冻结或激活用户User，弹出modal对话框_开始-->
+
+    <!--员工信息展示-->
+    <div class="panel panel-default">
+        <div class="panel-headling bg-body-tertiary" style="margin-top:10px">
+            <i class="bi bi-list-ul"></i>
+            Employee list
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped table-bordered">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                     <th scope="col">username</th>
+                    <th scope="col">last_name</th>
+                    <th scope="col">first_name</th>
+                    <th scope="col">email</th>
+                    <th scope="col">status</th>
+                    <th scope="col">company</th>
+                    <th scope="col">business_unit</th>
+                    <th scope="col">line_manager</th>
+                    <th scope="col">operate</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for obj in queryset %}
+                <tr>
+                    <th>{{ obj.id }}</th>
+                    <td>{{ obj.username }}</td>
+                    <td>{{ obj.last_name }}</td>
+                    <td>{{ obj.first_name }}</td>
+                    <td>{{ obj.email }}</td>
+                    <td>{{ obj.get_status_display }}</td>
+                    <td>{{ obj.company_name }}</td>
+                    <td>{{ obj.business_unit }}</td>
+                    <td>{{ obj.line_manager }}</td>
+                    <td>
+                        <button uid="{{ obj.id }}" class="btn btn-primary btn-sm BtnEdit">
+                            <i class="bi bi-pencil-fill"></i>
+                            Edit
+                        </button>
+
+                        {% if obj.status == 1 %}
+                            <button uid="{{ obj.id }}" class="btn btn-success btn-sm BtnDeactive">
+                                <i class="bi bi-person-fill-lock"></i>
+                                active
+                            </button>
+                        {% else %}
+                            <button uid="{{ obj.id }}" class="btn btn-danger btn-sm BtnActive">
+                                <i class="bi bi-person-fill-gear">
+                                    deactive
+                                </i>
+                            </button>
+                        {% endif %}
+
+                    </td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!--员工信息展示-->
+
+</div>
+
+{% endblock %}
+
+<!--hr_admin后台自定义的JavaScript-->
+{% block js %}
+<script type="text/javascript">
+    {#设置弹出提示框属性#}
+    toastr.options = {
+        closeButton: true,
+        debug: true,
+        progressBar: true,
+        positionClass: "toast-top-center",
+        onclick: null,
+        showDuration: "300",
+        hideDuration: "1000",
+        timeOut: "2000",
+        extendedTimeOut: "1000",
+        showEasing: "swing",
+        hideEasing: "linear",
+        showMethod: "fadeIn",
+        hideMethod: "fadeOut"
+    };
+
+    {#全局变量#}
+    var SwitchID;
+    var EditID;
+
+    {#事件绑定#}
+    $(function () {
+        {#新增用户#}
+        bindBNewUserAddMEvent();
+        bindBNewUserAddSaveEvent();
+
+        {#编辑用户,Save同新增#}
+        bindBUserEditMEvent();
+        bindBUserEditSaveEvent();
+
+        {#Switch用户#}
+        bindBUserSwitchMEvent();
+        bindBUserSwitchSaveEvent();
+    })
+
+    {#新增用户，modal show#}
+    function bindBNewUserAddMEvent(){
+        $("#BtnNewUserAdd").click(function () {
+            $('.error-msg').empty();
+            EditID='Save';
+            $('#SaveUserForm')[0].reset();
+            $("#NewUserAddModal").modal('show');
+        });
+    }
+
+    {#新增用户Save, ajax(新增编辑用户保存_路径1)#}
+    function bindBNewUserAddSaveEvent() {
+        $('#BtnNewUserSave').click(function () {
+            $('.error-msg').empty();
+            $.ajax({
+                url: '/index/expense/hr/',
+                type: 'post',
+                data:  $('#SaveUserForm').serialize()+"&EditID="+EditID,
+                dataType:'JSON',
+                success: function (res){
+                    if (res.status) {
+                         $('#SaveUserForm')[0].reset();
+                         $('#NewUserAddModal').modal('hide');
+                         toastr.success('success');
+                         window.setTimeout(function (){
+                            window.location.reload();
+                         },2000);
+                    } else {
+                        $.each(res.errors, function (name, errorlist) {
+                            $("#id_"+name).next().text(errorlist[0]);
+                        })
+                    }
+                },
+                error : function() {
+                    toastr.warning("something goes wrong");
+                }
+            })
+        })
+    }
+    
+    {#编辑用户，modal show(编辑用户_路径1_展示数据)#}
+    function bindBUserEditMEvent(){
+        $(".BtnEdit").click(function () {
+            $('.error-msg').empty()
+            $('#EditUserForm')[0].reset();
+            EditID = $(this).attr("uid");
+            $.ajax({
+                url: '/index/expense/hr',
+                type: 'get',
+                data: {
+                    typeIDJS: 'EditDataGet',
+                    uid: EditID,
+                    },
+                dataType:'JSON',
+                success: function (res){
+                    if (res.status) {
+                        var i=0
+                        $.each(res.data, function (name, value) {
+                            $("form[id='EditUserForm'] label").eq(i).next().val(value);
+                            i=i+1
+                        })
+                        $('#EditUserAddModal').modal('show');
+                    } else {
+                        toastr.warning(res.error);
+                    }
+                },
+                error : function() {
+                    toastr.warning("something goes wrong");
+                }
+            });
+        });
+    }
+
+    {#编辑用户Save, ajax(编辑用户保存_路径1)#}
+    function bindBUserEditSaveEvent() {
+        $('#BtnEditUserSave').click(function () {
+            $('.error-msg').empty();
+            $.ajax({
+                url: '/index/expense/hr/',
+                type: 'post',
+                data:  $('#EditUserForm').serialize()+"&EditID="+EditID,
+                dataType:'JSON',
+                success: function (res){
+                    if (res.status) {
+                         $('#EditUserForm')[0].reset();
+                         $('#EditUserAddModal').modal('hide');
+                         toastr.success('success');
+                         window.setTimeout(function (){
+                            window.location.reload();
+                         },2000);
+                    } else {
+                        $.each(res.errors, function (name, errorlist) {
+                            $("#id_"+name).next().text(errorlist[0]);
+                        })
+                    }
+                },
+                error : function() {
+                    toastr.warning("something goes wrong");
+                }
+            })
+        })
+    }
+
+    {#Switch用户，modal show#}
+    function bindBUserSwitchMEvent() {
+        $(".BtnDeactive").click(function(){
+            $('#UserSwitchModal').modal('show');
+            SwitchID = $(this).attr("uid");
+        });
+        $(".BtnActive").click(function(){
+            $('#UserSwitchModal').modal('show');
+            SwitchID = $(this).attr("uid");
+        });
+    }
+
+    {#Switch用户Save，ajax(Switch用户_路径1)#}
+    function bindBUserSwitchSaveEvent() {
+        $("#BtnSwitchUserSave").click(function(){
+            $.ajax({
+                url: "/index/expense/hr",
+                type: 'GET',
+                data: {
+                    typeIDJS: 'Switch',
+                    uid: SwitchID,
+                },
+                dataType:'JSON',
+                success: function (res){
+                    if (res.status){
+                        $('#UserSwitch').modal('hide');
+                        toastr.success('success');
+                        window.setTimeout(function (){
+                            window.location.reload();
+                        },2000);
+                    }else{
+                        toastr.warning(res.error);
+                    }
+
+                },
+                error : function() {
+                    toastr.warning("something goes wrong");
+                }
+            })
+        });
+    }
+
+</script>
+
+{% endblock %}
+
+
+
+
